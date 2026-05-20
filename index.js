@@ -13,27 +13,69 @@ client.once('clientReady', () => {
 });
 
 client.on('messageCreate', message => {
-  // Ignore bot messages
   if (message.author.bot) return;
 
   // Ping command
   if (message.content === '.ping') {
-    message.reply('🏓 Pong!');
+    message.reply('🏓 Pong! Brotherhood Bot is online.');
   }
 
   // Help command
   if (message.content === '.help') {
     message.reply(
-      '👑 **Brotherhood Bot Help**\n' +
-      '━━━━━━━━━━━━━━\n' +
+      '👑 **BROTHERHOOD BOT HELP PANEL** 👑\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+
+      '📌 **GENERAL COMMANDS**\n' +
       '`.ping` - Check bot status\n' +
-      '`.help` - Show help menu\n' +
-      '`.profile` - View your profile\n' +
-      '`.daily` - Claim daily reward\n' +
-      '`.train` - Gain XP\n' +
-      '`.fight` - Fight enemies\n' +
-      '━━━━━━━━━━━━━━\n' +
-      'Developer: @mastermind7313'
+      '`.help` - Show this help panel\n\n' +
+
+      '🛡️ **MODERATION COMMANDS**\n' +
+      '`.ban @user`\n' +
+      '`.kick @user`\n' +
+      '`.clear <number>`\n' +
+      '`.mute @user`\n' +
+      '`.unmute @user`\n\n' +
+
+      '🎭 **FUN COMMANDS**\n' +
+      '`.slap @user`\n' +
+      '`.punch @user`\n' +
+      '`.bite @user`\n' +
+      '`.kill @user`\n' +
+      '`.hug @user`\n\n' +
+
+      '⚔️ **RPG COMMANDS**\n' +
+      '`.profile`\n' +
+      '`.daily`\n' +
+      '`.weekly`\n' +
+      '`.train`\n' +
+      '`.level`\n' +
+      '`.shop`\n' +
+      '`.buy`\n' +
+      '`.inventory`\n' +
+      '`.sell`\n' +
+      '`.fight`\n' +
+      '`.bm`\n' +
+      '`.trade`\n' +
+      '`.equip`\n' +
+      '`.advisor`\n' +
+      '`.advsell`\n' +
+      '`.lootcrate`\n\n' +
+
+      '💖 **CHARM COMMANDS**\n' +
+      '`.charmhelp`\n' +
+      '`.charm`\n\n' +
+
+      '⚙️ **DEVELOPER COMMANDS**\n' +
+      '`.addcoins`\n' +
+      '`.removecoins`\n' +
+      '`.addlevel`\n' +
+      '`.setinventory`\n' +
+      '`.refreshbm`\n\n' +
+
+      '━━━━━━━━━━━━━━━━━━━━━━\n' +
+      '👨‍💻 Developer: **@mastermind7313**\n' +
+      '🚀 Brotherhood RPG v1.0'
     );
   }
 });
