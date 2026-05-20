@@ -1,4 +1,5 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
+const fs = require("fs");
 
 const client = new Client({
   intents: [
@@ -8,76 +9,33 @@ const client = new Client({
   ]
 });
 
-client.once('clientReady', () => {
-  console.log(`Logged in as ${client.user.tag}`);
+client.commands = new Collection();
+
+// LOAD COMMANDS
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.name, command);
+}
+
+// MESSAGE HANDLER
+client.on("messageCreate", (message) => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(".")) return;
+
+  const args = message.content.slice(1).trim().split(/ +/);
+  const cmd = args.shift().toLowerCase();
+
+  const command = client.commands.get(cmd);
+  if (!command) return;
+
+  command.execute(message, args, client);
 });
 
-client.on('messageCreate', message => {
-  if (message.author.bot) return;
-
-  // Ping command
-  if (message.content === '.ping') {
-    message.reply('🏓 Pong! Brotherhood Bot is online.');
-  }
-
-  // Help command
-  if (message.content === '.help') {
-    message.reply(
-      '👑 **BROTHERHOOD BOT HELP PANEL** 👑\n' +
-      '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-
-      '📌 **GENERAL COMMANDS**\n' +
-      '`.ping` - Check bot status\n' +
-      '`.help` - Show this help panel\n\n' +
-
-      '🛡️ **MODERATION COMMANDS**\n' +
-      '`.ban @user`\n' +
-      '`.kick @user`\n' +
-      '`.clear <number>`\n' +
-      '`.mute @user`\n' +
-      '`.unmute @user`\n\n' +
-
-      '🎭 **FUN COMMANDS**\n' +
-      '`.slap @user`\n' +
-      '`.punch @user`\n' +
-      '`.bite @user`\n' +
-      '`.kill @user`\n' +
-      '`.hug @user`\n\n' +
-
-      '⚔️ **RPG COMMANDS**\n' +
-      '`.profile`\n' +
-      '`.daily`\n' +
-      '`.weekly`\n' +
-      '`.train`\n' +
-      '`.level`\n' +
-      '`.shop`\n' +
-      '`.buy`\n' +
-      '`.inventory`\n' +
-      '`.sell`\n' +
-      '`.fight`\n' +
-      '`.bm`\n' +
-      '`.trade`\n' +
-      '`.equip`\n' +
-      '`.advisor`\n' +
-      '`.advsell`\n' +
-      '`.lootcrate`\n\n' +
-
-      '💖 **CHARM COMMANDS**\n' +
-      '`.charmhelp`\n' +
-      '`.charm`\n\n' +
-
-      '⚙️ **DEVELOPER COMMANDS**\n' +
-      '`.addcoins`\n' +
-      '`.removecoins`\n' +
-      '`.addlevel`\n' +
-      '`.setinventory`\n' +
-      '`.refreshbm`\n\n' +
-
-      '━━━━━━━━━━━━━━━━━━━━━━\n' +
-      '👨‍💻 Developer: **@mastermind7313**\n' +
-      '🚀 Brotherhood RPG v1.0'
-    );
-  }
+// READY EVENT
+client.once("ready", () => {
+  console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.login(process.env.TOKEN);
