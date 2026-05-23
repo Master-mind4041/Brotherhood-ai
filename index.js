@@ -1,6 +1,19 @@
+ const express = require("express");
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const fs = require("fs");
 
+// Keep-alive web server for UptimeRobot
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Brotherhood bot is alive!");
+});
+
+app.listen(3000, () => {
+  console.log("Web server running");
+});
+
+// Discord bot
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -19,7 +32,7 @@ for (const file of files) {
   client.commands.set(cmd.name, cmd);
 }
 
-// Handler
+// Command handler
 client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (!message.content.startsWith(".")) return;
@@ -33,8 +46,10 @@ client.on("messageCreate", (message) => {
   command.execute(message, args, client);
 });
 
+// Bot ready
 client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
 
+// Login
 client.login(process.env.TOKEN);
