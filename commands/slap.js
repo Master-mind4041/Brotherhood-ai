@@ -28,6 +28,9 @@ module.exports = {
         text: "Developer - @mastermind7313"
       });
 
-    message.channel.send({ embeds: [embed] });
+    message.channel.send({
+      content: `${message.author} ${user}`,
+      embeds: [embed]
+    });
   }
 };
