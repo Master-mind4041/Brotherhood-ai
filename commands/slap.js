@@ -1,3 +1,5 @@
+const { EmbedBuilder } = require("discord.js");
+
 module.exports = {
   name: "slap",
   execute(message) {
@@ -15,21 +17,17 @@ module.exports = {
 
     const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
 
-    message.reply({
-      embeds: [
-        {
-          color: 0xff0000,
-          title: "💥 Slap!",
-          description: `${message.author} slapped ${user}!`,
-          image: {
-            url: randomGif
-          },
-          footer: {
-            text: "Developer - @mastermind7313"
-          },
-          timestamp: new Date()
-        }
-      ]
-    });
+    const embed = new EmbedBuilder()
+      .setColor("#ff0000")
+      .setAuthor({
+        name: `${message.author.username} slaps ${user.username} for being silly!`,
+        iconURL: message.author.displayAvatarURL()
+      })
+      .setImage(randomGif)
+      .setFooter({
+        text: "Developer - @mastermind7313"
+      });
+
+    message.channel.send({ embeds: [embed] });
   }
 };
