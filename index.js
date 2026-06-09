@@ -1,10 +1,5 @@
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const fs = require("fs");
-
-const {
-  Client,
-  GatewayIntentBits,
-  Collection
-} = require("discord.js");
 
 const client = new Client({
   intents: [
@@ -14,44 +9,26 @@ const client = new Client({
   ]
 });
 
-const prefix = ".";
-
 client.commands = new Collection();
 
+const commandFiles = fs
+  .readdirSync("./commands")
+  .filter(file => file.endsWith(".js"));
 
-// ================= COMMAND HANDLER =================
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
 
-const commandFolders = fs.readdirSync("./commands");
-
-for (const folder of commandFolders) {
-
-  const commandFiles = fs
-    .readdirSync(`./commands/${folder}`)
-    .filter(file => file.endsWith(".js"));
-
-  for (const file of commandFiles) {
-
-    const command = require(`./commands/${folder}/${file}`);
-
-    client.commands.set(command.name, command);
-  }
+  client.commands.set(command.name, command);
 }
 
-
-// ================= READY EVENT =================
-
-client.once("ready", () => {
-
+client.on("ready", () => {
   console.log(`${client.user.tag} is online!`);
-
 });
 
-
-// ================= MESSAGE EVENT =================
-
 client.on("messageCreate", async (message) => {
-
   if (message.author.bot) return;
+
+  const prefix = ".";
 
   if (!message.content.startsWith(prefix)) return;
 
@@ -67,20 +44,12 @@ client.on("messageCreate", async (message) => {
   if (!command) return;
 
   try {
-
     command.execute(message, args);
-
-  } catch (err) {
-
-    console.error(err);
+  } catch (error) {
+    console.error(error);
 
     message.reply("❌ Error executing command.");
-
   }
-
 });
-
-
-// ================= LOGIN =================
 
 client.login(process.env.TOKEN);
