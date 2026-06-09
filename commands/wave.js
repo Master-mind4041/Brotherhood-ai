@@ -10,9 +10,9 @@ module.exports = {
     }
 
     const gifs = [
-      "https://tenor.com/view/cute-animals-mochi-mochi-peach-cat-goma-cat-wave-gif-3501325470361230365",
-      "https://tenor.com/view/quby-high-five-wave-pentol-qubysani-gif-19935273",
-      "https://tenor.com/view/hola-gif-13727162376112743773"
+      "https://cdn.discordapp.com/attachments/1467434180748120104/1513801553440538745/image2.gif?ex=6a290d0f&is=6a27bb8f&hm=8add4dd21aaec8dfeb848f114c6f079af87e42e8d0e5941862462db864f7928b&",
+      "https://cdn.discordapp.com/attachments/1467434180748120104/1513801552882565150/image1.gif?ex=6a290d0f&is=6a27bb8f&hm=24c2c5efcbec549a74243085d7eda5ddbdea8951ceb25a9f780c7402494f276a&",
+      "https://cdn.discordapp.com/attachments/1467434180748120104/1513801552324853810/image0.gif?ex=6a290d0f&is=6a27bb8f&hm=e3aae65aead39fe50ad42b53c0f43398eb355b97627d99ac243cfdb995a62dde&"
     ];
 
     const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
