@@ -8,11 +8,10 @@ module.exports = {
 
   async execute(message) {
 
-    let data = await db.get(`player_${message.author.id}`);
+    let player = await db.get(`player_${message.author.id}`);
 
-    if (!data) {
-
-      data = {
+    if (!player) {
+      player = {
         coins: 500,
         xp: 0,
         level: 1,
@@ -21,38 +20,47 @@ module.exports = {
         inventory: []
       };
 
-      await db.set(`player_${message.author.id}`, data);
+      await db.set(`player_${message.author.id}`, player);
     }
 
-    const timeout = 7 * 24 * 60 * 60 * 1000;
+    const cooldown = 7 * 24 * 60 * 60 * 1000;
 
     const lastWeekly = await db.get(`weekly_${message.author.id}`);
 
-    if (lastWeekly && Date.now() - lastWeekly < timeout) {
+    if (lastWeekly) {
 
-      const timeLeft = timeout - (Date.now() - lastWeekly);
+      const remaining = cooldown - (Date.now() - lastWeekly);
 
-      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      if (remaining > 0) {
 
-      return message.reply(
-        `⏳ You already claimed your weekly reward.\nCome back in ${days} day(s).`
-      );
+        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (remaining % (1000 * 60 * 60 * 24)) /
+          (1000 * 60 * 60)
+        );
+
+        return message.reply(
+          `⏳ You already claimed your weekly reward.\nCome back in **${days}d ${hours}h**`
+        );
+      }
     }
 
     const reward = Math.floor(Math.random() * 5000) + 5000;
+    const xpReward = 100;
 
-    data.coins += reward;
-    data.xp += 100;
+    player.coins += reward;
+    player.xp += xpReward;
 
-    await db.set(`player_${message.author.id}`, data);
+    await db.set(`player_${message.author.id}`, player);
 
+    // Save cooldown timestamp
     await db.set(`weekly_${message.author.id}`, Date.now());
 
     const embed = new EmbedBuilder()
       .setColor("#ff0000")
       .setTitle("🎁 Weekly Reward")
       .setDescription(
-        `💰 You received **${reward} coins**!\n⚡ +100 XP added`
+        `💰 Coins Earned: **${reward}**\n⚡ XP Earned: **${xpReward}**`
       )
       .setFooter({
         text: "Developer - @mastermind7313"
