@@ -3,6 +3,13 @@ const { QuickDB } = require("quick.db");
 
 const db = new QuickDB();
 
+function getRequiredXP(level) {
+  if (level <= 10) return 100;
+  if (level <= 20) return 400;
+  if (level <= 30) return 700;
+  return 1000;
+}
+
 module.exports = {
   name: "train",
 
@@ -11,7 +18,6 @@ module.exports = {
     let data = await db.get(`player_${message.author.id}`);
 
     if (!data) {
-
       data = {
         coins: 500,
         xp: 0,
@@ -43,28 +49,25 @@ module.exports = {
 
     data.xp += xpGain;
 
-    let requiredXP = 150;
-
-    if (data.level >= 11) {
-      requiredXP = 400;
-    }
-
-    if (data.level >= 21) {
-      requiredXP = 1000;
-    }
-
     let leveledUp = false;
+    let levelsGained = 0;
 
-    if (data.xp >= requiredXP) {
+    while (data.xp >= getRequiredXP(data.level)) {
 
-      data.level += 1;
-      data.xp -= requiredXP;
+      data.xp -= getRequiredXP(data.level);
+
+      data.level++;
 
       data.hp += 10;
+
       data.power += 5;
 
       leveledUp = true;
+
+      levelsGained++;
     }
+
+    const requiredXP = getRequiredXP(data.level);
 
     await db.set(`player_${message.author.id}`, data);
 
@@ -83,10 +86,14 @@ module.exports = {
       ];
 
     const embed = new EmbedBuilder()
-      .setColor("#ff0000")
-      .setTitle("🏋️ Training Complete")
+      .setColor("#8B0000")
+      .setAuthor({
+        name: `${message.author.username}'s Training Session`,
+        iconURL: message.author.displayAvatarURL()
+      })
+      .setTitle("🏋️ Brotherhood Training")
       .setDescription(
-        `${randomText}\n\n⚡ +${xpGain} XP`
+        `${randomText}\n\n⚡ XP Earned: **${xpGain}**`
       )
 
       .addFields(
@@ -99,20 +106,27 @@ module.exports = {
           name: "⚡ XP",
           value: `${data.xp}/${requiredXP}`,
           inline: true
+        },
+        {
+          name: "🗡️ Power",
+          value: `${data.power}`,
+          inline: true
         }
       )
 
       .setFooter({
-        text: "Developer - @mastermind7313"
-      });
+        text: "⚔️ Brotherhood RPG • Developer - @mastermind7313"
+      })
+
+      .setTimestamp();
 
     if (leveledUp) {
 
       embed.addFields({
-        name: "🎉 Level Up!",
-        value: `You reached level ${data.level}!`,
-        inline: false
+        name: "🎉 LEVEL UP!",
+        value: `You gained **${levelsGained} level(s)**!\nCurrent Level: **${data.level}**`
       });
+
     }
 
     message.channel.send({
