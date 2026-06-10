@@ -3,6 +3,13 @@ const { QuickDB } = require("quick.db");
 
 const db = new QuickDB();
 
+function getRequiredXP(level) {
+  if (level <= 10) return 100;
+  if (level <= 20) return 400;
+  if (level <= 30) return 700;
+  return 1000;
+}
+
 module.exports = {
   name: "fight",
 
@@ -11,7 +18,6 @@ module.exports = {
     let data = await db.get(`player_${message.author.id}`);
 
     if (!data) {
-
       data = {
         coins: 500,
         xp: 0,
@@ -24,8 +30,6 @@ module.exports = {
       await db.set(`player_${message.author.id}`, data);
     }
 
-    // ================= COOLDOWN =================
-
     const timeout = 10 * 1000;
 
     const lastFight = await db.get(`fight_${message.author.id}`);
@@ -34,35 +38,68 @@ module.exports = {
 
       const timeLeft = timeout - (Date.now() - lastFight);
 
-      const seconds = Math.floor(timeLeft / 1000);
-
       return message.reply(
-        `⏳ You are tired after fighting.\nFight again in ${seconds}s`
+        `⏳ You are recovering from battle.\nFight again in **${Math.floor(timeLeft / 1000)}s**`
       );
     }
 
-    // ================= ENEMY =================
+    let enemyTier;
+    let enemy;
+    let coins;
+    let xp;
 
-    const enemies = [
-      "Bandit",
-      "Knight",
-      "Assassin",
-      "Monster",
-      "Dark Warrior"
-    ];
+    const chance = Math.random() * 100;
 
-    const enemy =
-      enemies[Math.floor(Math.random() * enemies.length)];
+    if (chance <= 50) {
 
-    // ================= REWARDS =================
+      enemyTier = "🟢 Easy";
 
-    const win = Math.random() < 0.7;
+      const enemies = ["Bandit", "Goblin", "Scout", "Thief"];
 
-    let coins = Math.floor(Math.random() * 300) + 100;
+      enemy = enemies[Math.floor(Math.random() * enemies.length)];
 
-    let xp = Math.floor(Math.random() * 50) + 25;
+      coins = Math.floor(Math.random() * 200) + 100;
+      xp = Math.floor(Math.random() * 30) + 20;
 
-    let resultText = "";
+    } else if (chance <= 80) {
+
+      enemyTier = "🟡 Medium";
+
+      const enemies = ["Knight", "Mercenary", "Assassin", "Raider"];
+
+      enemy = enemies[Math.floor(Math.random() * enemies.length)];
+
+      coins = Math.floor(Math.random() * 400) + 300;
+      xp = Math.floor(Math.random() * 60) + 50;
+
+    } else if (chance <= 95) {
+
+      enemyTier = "🔴 Hard";
+
+      const enemies = ["Dark Warrior", "Demon", "Warlord", "Commander"];
+
+      enemy = enemies[Math.floor(Math.random() * enemies.length)];
+
+      coins = Math.floor(Math.random() * 800) + 700;
+      xp = Math.floor(Math.random() * 150) + 100;
+
+    } else {
+
+      enemyTier = "⚫ Boss";
+
+      const enemies = ["Dragon", "Shadow King", "Ancient Titan", "Demon Lord"];
+
+      enemy = enemies[Math.floor(Math.random() * enemies.length)];
+
+      coins = Math.floor(Math.random() * 3500) + 1500;
+      xp = Math.floor(Math.random() * 250) + 250;
+    }
+
+    const winChance = 70 + Math.min(data.level, 20);
+
+    const win = Math.random() * 100 < winChance;
+
+    let resultText;
 
     if (win) {
 
@@ -70,61 +107,62 @@ module.exports = {
       data.xp += xp;
 
       resultText =
-        `⚔️ You defeated the **${enemy}**!\n\n💰 +${coins} coins\n⚡ +${xp} XP`;
+        `⚔️ You defeated **${enemy}**!\n\n💰 +${coins} Coins\n⚡ +${xp} XP`;
 
     } else {
 
       const loss = Math.floor(coins / 2);
 
-      data.coins -= loss;
-
-      if (data.coins < 0) data.coins = 0;
+      data.coins = Math.max(0, data.coins - loss);
 
       resultText =
-        `💀 You were defeated by the **${enemy}**!\n\n❌ Lost ${loss} coins`;
-    }
-
-    // ================= LEVEL SYSTEM =================
-
-    let requiredXP = 150;
-
-    if (data.level >= 11) {
-      requiredXP = 400;
-    }
-
-    if (data.level >= 21) {
-      requiredXP = 1000;
+        `💀 You were defeated by **${enemy}**!\n\n❌ Lost ${loss} Coins`;
     }
 
     let leveledUp = false;
+    let levelsGained = 0;
 
-    if (data.xp >= requiredXP) {
+    while (data.xp >= getRequiredXP(data.level)) {
 
-      data.level += 1;
+      data.xp -= getRequiredXP(data.level);
 
-      data.xp -= requiredXP;
+      data.level++;
 
       data.hp += 10;
 
       data.power += 5;
 
       leveledUp = true;
+
+      levelsGained++;
     }
 
-    // ================= SAVE =================
+    const requiredXP = getRequiredXP(data.level);
 
     await db.set(`player_${message.author.id}`, data);
 
     await db.set(`fight_${message.author.id}`, Date.now());
 
-    // ================= EMBED =================
-
     const embed = new EmbedBuilder()
-      .setColor("#ff0000")
+      .setColor("#8B0000")
+      .setAuthor({
+        name: `${message.author.username}'s Battle`,
+        iconURL: message.author.displayAvatarURL()
+      })
       .setTitle("⚔️ Brotherhood Fight")
       .setDescription(resultText)
 
       .addFields(
+        {
+          name: "👹 Enemy",
+          value: `${enemy}`,
+          inline: true
+        },
+        {
+          name: "🏷️ Tier",
+          value: enemyTier,
+          inline: true
+        },
         {
           name: "📈 Level",
           value: `${data.level}`,
@@ -139,19 +177,25 @@ module.exports = {
           name: "💰 Coins",
           value: `${data.coins}`,
           inline: true
+        },
+        {
+          name: "🗡️ Power",
+          value: `${data.power}`,
+          inline: true
         }
       )
 
       .setFooter({
-        text: "Developer - @mastermind7313"
-      });
+        text: "⚔️ Brotherhood RPG • Developer - @mastermind7313"
+      })
+
+      .setTimestamp();
 
     if (leveledUp) {
 
       embed.addFields({
-        name: "🎉 Level Up!",
-        value: `You reached level ${data.level}!`,
-        inline: false
+        name: "🎉 LEVEL UP!",
+        value: `You gained **${levelsGained} level(s)**!\nCurrent Level: **${data.level}**`
       });
 
     }
