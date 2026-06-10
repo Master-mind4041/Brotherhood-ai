@@ -3,7 +3,7 @@ const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 
 module.exports = {
-  name: "addcoins",
+  name: "acoins",
 
   async execute(message, args) {
 
