@@ -16,7 +16,7 @@ module.exports = {
         "❌ You need Administrator permission to use this command."
       );
     }
-
+          message.delete().catch(() => {});
     const amount = parseInt(args[0]);
 
     if (!amount || amount < 1 || amount > 100) {
