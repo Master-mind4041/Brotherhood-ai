@@ -17,7 +17,9 @@ module.exports = {
       );
     }
 
-    const member = message.mentions.members.first();
+    message.delete().catch(() => {});
+
+const member = message.mentions.members.first();
 
     if (!member) {
       return message.reply(
