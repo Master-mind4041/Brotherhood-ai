@@ -7,15 +7,19 @@ module.exports = {
 
   async execute(message) {
 
-    // Your Discord ID
+    // Owner Only
     if (message.author.id !== "967804605931069461") {
-      return message.reply("❌ Developer only command.");
+      return message.reply("❌ Owner only command.");
+    }
+
+    if (message.deletable) {
+      message.delete().catch(() => {});
     }
 
     const channel = message.mentions.channels.first();
 
     if (!channel) {
-      return message.reply(
+      return message.channel.send(
         "❌ Usage: .setlog #channel"
       );
     }
@@ -25,7 +29,7 @@ module.exports = {
       channel.id
     );
 
-    message.reply(
+    message.channel.send(
       `✅ Log channel set to ${channel}`
     );
   }
